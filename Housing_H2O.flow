@@ -1,0 +1,117 @@
+{
+  "version": "1.0.0",
+  "cells": [
+    {
+      "type": "md",
+      "input": "### * **Welcome to H2O Flow!** *\n\n# How to Predict Housing Prices\n\n#### In this demo we will show you how to:\n\n* **Import a dataset**\n\n* **Parse the dataset's contents**\n\n* **Split your dataset into a training and validation set (more on this later)**\n\n* **Build a model to predict housing prices**\n\n* **Evaluate the model's performance**\n\n* **Visualize your results**\n\n### How to use the demo\na) you can run all the cells at once by clicking on the double arrowheads next to the question mark in the symbols menu bar at the top of the page\n\nb) or you can click on individual cells and press shift + enter to run a cell (for more information read through the help menu on the left panel)\n\n**Note:** The demo is written so that you do not need to interact with any of the *Action* buttons, however, if you do click a button - to further explore the data - the new cell will appear at the bottom of the page. You can move this new cell up or down using the up or down arrows in the symbols menu bar.\n\n### Summary of the dataset\n* regression problem: predict median housing prices\n* features are real, integer, and categorical\n\n*The original dataset can be found at https://archive.ics.uci.edu/ml/datasets/Housing*\n\n### Step 1) \n#### Import your File\nIn the cell below we import the Boston Housing dataset from the UCI Machine Learning datset repository. This dataset predicts the median value of owner-occupied homes in the $1000’s with a given set of descriptors such as the average number of rooms per dwelling and the proportion of non-retail business acres per town.\n\n**Note:** If you do not want to download the dataset from Amazon S3, simply comment out this line, then uncomment the line below, which gives an example of a local path, and replace the local path with the path to your dataset."
+    },
+    {
+      "type": "cs",
+      "input": "importFiles"
+    },
+    {
+      "type": "cs",
+      "input": "# importFiles [ \"https://s3.amazonaws.com/h2o-public-test-data/smalldata/gbm_test/BostonHousing.csv\" ]\nimportFiles [ \"/Users/laurend/Desktop/meetup_10:25/BostonHousing.csv\" ]"
+    },
+    {
+      "type": "md",
+      "input": "### Step 2)\n#### Parse the File\nH2O Flow parses the csv categorizing each column as a Numeric or Enum (an enum is a categorical feature, this lets the algorithm know each number represents a group not a real number). If the parser mislabels a column you can change the value using the drop-down menu. In this case, we will change the \"chas\" column type from numeric to enum and leave the rest as is."
+    },
+    {
+      "type": "cs",
+      "input": "# setupParse source_frames: [ \"https://s3.amazonaws.com/h2o-public-test-data/smalldata/gbm_test/BostonHousing.csv\" ]\nsetupParse source_frames: [ \"nfs://Users/laurend/Desktop/meetup_10:25/BostonHousing.csv\" ]"
+    },
+    {
+      "type": "md",
+      "input": "#### About the Features\nfor the curious here are the column names and their descriptions: \n\n1. CRIM: per capita crime rate by town\n2. ZN: proportion of residential land zoned for lots over 25,000 sq.ft.\n3. INDUS: proportion of non-retail business acres per town\n4. CHAS: Charles River dummy variable (= 1 if tract bounds river; 0 otherwise)\n5. NOX: nitric oxides concentration (parts per 10 million)\n6. RM: average number of rooms per dwelling\n7. AGE: proportion of owner-occupied units built prior to 1940\n8. DIS: weighted distances to five Boston employment centres\n9. RAD: index of accessibility to radial highways\n10. TAX: full-value property-tax rate per $10,000\n11. PTRATIO: pupil-teacher ratio by town\n12. B: 1000(Bk - 0.63)^2 where Bk is the proportion of blacks by town\n13. LSTAT: % lower status of the population\n14. MEDV: Median value of owner-occupied homes in $1000's\n\n*taken from the UCI Machine Learning Repository data description*"
+    },
+    {
+      "type": "cs",
+      "input": "parseFiles\n  # source_frames: [\"https://s3.amazonaws.com/h2o-public-test-data/smalldata/gbm_test/BostonHousing.csv\"]\n  source_frames: [\"nfs://Users/laurend/Desktop/meetup_10:25/BostonHousing.csv\"]\n  destination_frame: \"BostonHousing.hex\"\n  parse_type: \"CSV\"\n  separator: 44\n  number_columns: 14\n  single_quotes: false\n  column_names: [\"crim\",\"zn\",\"indus\",\"chas\",\"nox\",\"rm\",\"age\",\"dis\",\"rad\",\"tax\",\"ptratio\",\"b\",\"lstat\",\"medv\"]\n  column_types: [\"Numeric\",\"Numeric\",\"Numeric\",\"Enum\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\",\"Numeric\"]\n  delete_on_done: true\n  check_header: 1\n  chunk_size: 4194304\n"
+    },
+    {
+      "type": "cs",
+      "input": "getFrameSummary \"BostonHousing.hex\""
+    },
+    {
+      "type": "md",
+      "input": "### Distributions\nYou can look at the distribution of a feature column by clicking on its name in the COLUMN SUMMARIES table above. After clicking on a column's name, a new cell will apear with a characterics bar, boxplot, and histogram.\n\nLet's take a look at the response column. We can see that the median median-house price is $21,200, the most expense median-house price is $50,000, and the cheapest median-house price is $5,000 (this dataset was donated to UCI in the 1990s).\n\nClicking on the \"crim\" column (real) and looking at the boxplot we see that the crime rate ranges from well below .01 crimes per capita to above 80 crimes per capita with a median crime rate of .18. The histogram emphasizes how crime rate over all the samples is relatively low. \n\n*Note: the characterics bar shows what proportion of the feature columns are missing, zeros, others, etc. Hover over it to see which color relates to which characteristic* "
+    },
+    {
+      "type": "cs",
+      "input": "getColumnSummary \"BostonHousing.hex\", \"medv\""
+    },
+    {
+      "type": "cs",
+      "input": "getColumnSummary \"BostonHousing.hex\", \"crim\""
+    },
+    {
+      "type": "cs",
+      "input": "getColumnSummary \"BostonHousing.hex\", \"rm\""
+    },
+    {
+      "type": "cs",
+      "input": "getColumnSummary \"BostonHousing.hex\", \"age\""
+    },
+    {
+      "type": "md",
+      "input": "### Step 3)\n#### Split the Data\nBefore we build a model, we want to split the dataset into training, validation, and test datasets. This way we can build a model using one dataset, see how the model performs on an other dataset, and make predictions on the remaining dataset. A good split to use is 70% for the training dataset, 15% for the validation dataset, and 15% for the test dataset."
+    },
+    {
+      "type": "cs",
+      "input": "assist splitFrame, \"BostonHousing.hex\""
+    },
+    {
+      "type": "cs",
+      "input": "splitFrame \"BostonHousing.hex\", [0.7,0.15], [\"BostonHousing.hex_0.70_training\",\"BostonHousing.hex_0.150_validation\",\"BostonHousing.hex_0.150_test\"], 1234"
+    },
+    {
+      "type": "md",
+      "input": "### Step 4)\n#### Build Your Model\n* For this example we will use a GBM, but you could also choose from any of the other supervised learning algorithms that work for regression problems (i.e. Generalized Linear Model, Distributed Random Forest, or Deep Learning).\n\n* For the parameters we select the training_frame as the 70% split and the validation_frame as the 15% split, we leave the parameter nfolds alone because we already created our folds with the training and validation frames.\n\n* The response is \"medv\", Median value of owner-occupied homes in $1000’s.\n\n* The rest of the parameters can be left with the default values."
+    },
+    {
+      "type": "cs",
+      "input": "assist buildModel, null, training_frame: \"BostonHousing.hex\""
+    },
+    {
+      "type": "cs",
+      "input": "buildModel 'gbm', {\"model_id\":\"GBM_Housing\",\"training_frame\":\"BostonHousing.hex_0.70_training\",\"validation_frame\":\"BostonHousing.hex_0.150_validation\",\"nfolds\":0,\"response_column\":\"medv\",\"ignored_columns\":[],\"ignore_const_cols\":true,\"ntrees\":50,\"max_depth\":5,\"min_rows\":10,\"nbins\":20,\"seed\":-1,\"learn_rate\":0.1,\"sample_rate\":1,\"col_sample_rate\":1,\"score_each_iteration\":false,\"score_tree_interval\":0,\"nbins_top_level\":1024,\"nbins_cats\":1024,\"r2_stopping\":1.7976931348623157e+308,\"stopping_rounds\":0,\"stopping_metric\":\"AUTO\",\"stopping_tolerance\":0.001,\"max_runtime_secs\":0,\"learn_rate_annealing\":1,\"distribution\":\"AUTO\",\"huber_alpha\":0.9,\"checkpoint\":\"\",\"col_sample_rate_per_tree\":1,\"min_split_improvement\":0.00001,\"histogram_type\":\"AUTO\",\"categorical_encoding\":\"AUTO\",\"build_tree_one_node\":false,\"sample_rate_per_class\":[],\"col_sample_rate_change_per_level\":1,\"max_abs_leafnode_pred\":1.7976931348623157e+308,\"pred_noise_bandwidth\":0}"
+    },
+    {
+      "type": "md",
+      "input": "### Step 5)\n#### Evaluate Your Model\n\n**Scoring History Plot:**\n\nThis plot shows how the deviance goes down as we increase the number of trees. Notice how the validation dataset improves little after 25 trees. The training dataset also improves little after 25 trees, but it has a much steeper drop in deviance than the valiation; this may be due to overfitting.\n\n*The deviance metric for this model is equivalent to the MSE (mean squared error). MSE as it is called takes the average of the squared difference between your predicted and actual response values. In general, the smaller your MSE the better your model.*\n\n**The Variable Importances Chart:**\n\nThis chart shows the relative importance of each feature. We see that the model thinks the average room number per dwelling and percentage of the population with lower status are the most predictive features. On the other hand the model thinks the proportion of owner-occupied units built prior to 1940 and the index of accessibility to radial highways are less relevant to predicting the median value of owner-occupied homes."
+    },
+    {
+      "type": "cs",
+      "input": "getModel \"GBM_Housing\""
+    },
+    {
+      "type": "md",
+      "input": "### Step 6)\n#### Make a Prediction\nThis is the step where you would make predictions on a dataset without the answers. In our toy dataset we do know the answers, but we will pretend like we don't. \n\n**Note**: If you pass a test dataset with the response column the algorithm will ignore it; it only pays attention to the features columns."
+    },
+    {
+      "type": "cs",
+      "input": "predict model: \"GBM_Housing\""
+    },
+    {
+      "type": "cs",
+      "input": "predict model: \"GBM_Housing\", frame: \"BostonHousing.hex_0.150_test\", predictions_frame: \"Housing_Prediction\"\n# clicked on \"Housing_Prediction\" in the predictions field"
+    },
+    {
+      "type": "cs",
+      "input": "getFrameSummary \"Housing_Prediction\"\n# clicked on View Data"
+    },
+    {
+      "type": "cs",
+      "input": "getFrameData \"Housing_Prediction\""
+    },
+    {
+      "type": "md",
+      "input": "For fun here is the original dataset so you can directly inspect how the model performed."
+    },
+    {
+      "type": "cs",
+      "input": "getFrameData \"BostonHousing.hex_0.150_validation\"\n# Instead of remembering the command above, 'getFrameData \"BostonHousing.hex_0.150_validation\"', you can also view the original test dataset by first clicking on 'List All Frames' under Data in the top menu bar, second clicking on the linked ID 'BostonHousing.hex_0.150_test', which will show you a summary of the dataset, and third clicking on the 'View Data' *Action* button."
+    }
+  ]
+}
